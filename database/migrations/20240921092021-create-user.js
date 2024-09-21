@@ -31,7 +31,11 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
+      refreshToken: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     });
   },
   async down(queryInterface, Sequelize) {

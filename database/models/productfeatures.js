@@ -1,25 +1,34 @@
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../index'); // Assuming sequelize is exported from your index file
 
-'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class ProductFeatures extends Model {
-    static associate(models) {
-      ProductFeatures.belongsTo(models.ProductDetails, {
-        foreignKey: 'Product_Id',
-        as: 'product'
-      });
-    }
-  }
-  ProductFeatures.init({
-    Product_Id: DataTypes.INTEGER,
-    Feature_Id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true
+const ProductFeatures = sequelize.define('ProductFeatures', {
+    Product_Id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'ProductDetails',
+            key: 'ProductId',
+        },
     },
-    Feature: DataTypes.STRING
-  }, {
+    Feature_Id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+    },
+    Feature: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+}, {
     sequelize,
     modelName: 'ProductFeatures',
-  });
-  return ProductFeatures;
+});
+
+
+ProductFeatures.associate = (models) => {
+    ProductFeatures.belongsTo(models.ProductDetails, {
+        foreignKey: 'Product_Id',
+        as: 'product',
+    });
 };
+
+module.exports = {ProductFeatures};

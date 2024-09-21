@@ -1,23 +1,47 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { sequelize } = require('./models');
+const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const dotenv = require("dotenv");
+const { connectDB } = require("./database/index.js");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 8082
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: '*',
+    credentials: true,
+    methods: 'GET,POST', 
+  })
+);
 
-app.get('/', (req, res) => {
-    res.send('Sequelize Express Application');
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public"));
+app.use(cookieParser());
+
+const userRouter = require("./Routes/userRoutes");
+
+app.get("/", (req, res) => {
+  res.send("hello World");
 });
 
-app.use("/products", )
-sequelize.sync({ force: false }).then(() => {
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+app.use("/api/v1/user", userRouter);
+module.exports = { app };
+
+dotenv.config();
+
+connectDB()
+.then(() => {
+    http.listen(process.env.PORT || 8000, () => {
+    console.log(`Server/ws is running at Port:${process.env.PORT}`);
     });
-}).catch((err) => {
-    console.log('Error syncing with the database:', err.message);
+})
+.catch((e) => {
+    console.log("Database connection failed", e);
 });
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+

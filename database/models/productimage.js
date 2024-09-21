@@ -1,26 +1,42 @@
-'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class ProductImage extends Model {
-    static associate(models) {
-      ProductImage.belongsTo(models.ProductDetails, {
-        foreignKey: 'ProductId',
-        as: 'product'
-      });
-    }
-  }
-  ProductImage.init({
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../index');
+
+const ProductImage = sequelize.define('ProductImage', {
     image_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
-    ProductId: DataTypes.INTEGER,
-    image_url: DataTypes.STRING,
-    image_name: DataTypes.STRING,
-    storage_platform: DataTypes.STRING
-  }, {
+    ProductId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'ProductDetails',
+            key: 'ProductId',
+        },
+    },
+    image_url: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    image_name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    storage_platform: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+}, {
     sequelize,
     modelName: 'ProductImage',
-  });
-  return ProductImage;
+});
+
+ProductImage.associate = (models) => {
+    ProductImage.belongsTo(models.ProductDetails, {
+        foreignKey: 'ProductId',
+        as: 'product',
+    });
 };
+
+module.exports = {ProductImage};

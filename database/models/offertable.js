@@ -1,25 +1,27 @@
-'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class OfferTable extends Model {
-    static associate(models) {
-      OfferTable.belongsTo(models.ProductDetails, {
-        foreignKey: 'Product_id',
-        as: 'product'
-      });
-    }
-  }
-  OfferTable.init({
-    Product_id: DataTypes.INTEGER,
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../index');
+
+const OfferTable = sequelize.define('OfferTable', {
+    Product_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     offer_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true
+        type: DataTypes.INTEGER,
+        primaryKey: true,
     },
     offer_price: DataTypes.DECIMAL(10, 2),
-    offer_percentage: DataTypes.DECIMAL(5, 2)
-  }, {
+    offer_percentage: DataTypes.DECIMAL(5, 2),
+}, {
     sequelize,
     modelName: 'OfferTable',
-  });
-  return OfferTable;
+});
+
+OfferTable.associate = (models) => {
+    OfferTable.belongsTo(models.ProductDetails, {
+        foreignKey: 'Product_id',
+        as: 'product',
+    });
 };
+
+module.exports = {OfferTable};
