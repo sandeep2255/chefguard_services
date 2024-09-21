@@ -1,6 +1,6 @@
-const ApiError = require("../utils/ApiError");
+const {ApiError} = require("../utils/ApiError");
 const { asyncHandler } = require("../utils/AsyncHandler");
-const members = require("../database/models/user");
+const {User} = require("../database/models/user");
 const jwt = require("jsonwebtoken");
 const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
@@ -12,9 +12,9 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
       throw new ApiError(401, "unauthorized request");
     }
 
-    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedToken = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
-    const member = await members.findOne({
+    const member = await User.findOne({
       where: {
         email: decodedToken.email,
       },

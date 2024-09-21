@@ -68,7 +68,8 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  const member = await User.findOne({ where: { email: req.user.email } });
+  const { email, password } = req.body;
+  const member = await User.findOne({ where: { email: email } });
   
   if (!member) {
     throw new ApiError(404, "User not found");

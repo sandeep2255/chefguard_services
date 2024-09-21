@@ -30,7 +30,7 @@ const User = sequelize.define('User', {
     },
     refreshToken: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         defaultValue: null,
       },
 }, {
