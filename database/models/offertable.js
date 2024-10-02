@@ -3,11 +3,16 @@ const { sequelize } = require('../index');
 
 const OfferTable = sequelize.define('OfferTable', {
     Product_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
+        references: {
+            model: 'ProductDetails',
+            key: 'Product_Id',
+        },
     },
     offer_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
     offer_price: DataTypes.DECIMAL(10, 2),

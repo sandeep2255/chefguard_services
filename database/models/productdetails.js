@@ -2,18 +2,33 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../index');
 
 const ProductDetails = sequelize.define('ProductDetails', {
-    Product_Id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-    },
-    Product_name: DataTypes.STRING,
-    Model: DataTypes.STRING,
-    Price: DataTypes.DECIMAL(10, 2),
-    Description: DataTypes.TEXT,
+  Product_Id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false,
+  },
+  Product_name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  Model: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  Price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+  },
+  Description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
-    sequelize,
-    modelName: 'ProductDetails',
+  timestamps: true,
+  tableName: 'productdetails',
 });
+
 
 ProductDetails.associate = (models) => {
     ProductDetails.hasMany(models.ProductFeatures, {

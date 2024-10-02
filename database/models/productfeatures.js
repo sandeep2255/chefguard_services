@@ -2,26 +2,28 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../index'); // Assuming sequelize is exported from your index file
 
 const ProductFeatures = sequelize.define('ProductFeatures', {
-    Product_Id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'ProductDetails',
-            key: 'ProductId',
-        },
-    },
     Feature_Id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+      allowNull: false,
+    },
+    Product_Id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'ProductDetails',
+        key: 'Product_Id',
+      },
     },
     Feature: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-}, {
-    sequelize,
-    modelName: 'ProductFeatures',
-});
+  }, {
+    timestamps: true,
+    tableName: 'productfeatures',
+  });
 
 
 ProductFeatures.associate = (models) => {

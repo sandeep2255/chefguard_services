@@ -1,10 +1,12 @@
 'use strict';
 
+const { DataTypes } = require("sequelize");
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('OfferTables', {
       Product_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         references: {
           model: 'ProductDetails',
           key: 'Product_Id'
@@ -13,9 +15,8 @@ module.exports = {
         onDelete: 'SET NULL'
       },
       offer_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true
       },
       offer_price: {
