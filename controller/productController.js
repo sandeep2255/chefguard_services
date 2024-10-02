@@ -13,5 +13,17 @@ const createProduct = asyncHandler(async(req,res)=>{
     return res.json(new ApiResponse('200', responseData,'Success'))
 })
 
+const createOffer = asyncHandler(async(req,res)=>{
+    const offerData = req.body
+    const responseData = await productServices.addOfferItem(offerData)
+    if(!responseData){
+        throw new ApiError(400, 'Invalid offer data');
+    }
+    return res.json(new ApiResponse('200',responseData, 'Success'))
+})
 
-module.exports={createProduct}
+
+module.exports={
+    createProduct,
+    createOffer,
+}

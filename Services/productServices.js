@@ -1,7 +1,9 @@
+const Sequelize = require("sequelize")
 const { ProductDetails } = require("../database/models/productdetails");
 const { ProductFeatures } = require("../database/models/productfeatures");
 const { ProductImage } = require("../database/models/productimage");
-const { sequelize } = require("../database/index")
+const {OfferTable} = require("../database/models/offertable");
+const { sequelize } = require("../database/index");
 const { v4: uuidv4 } = require('uuid');
 const { ApiError } = require("../utils/ApiError");
 
@@ -61,6 +63,37 @@ class productServices {
         } catch (error) {
             await t.rollback();
             throw new ApiError('500', error.message,"failed to add item");
+        }
+    }
+
+    static async addOfferItem(offerDetails){
+        const {productId, offerPercentage} = offerDetails
+        const t = await sequelize.transaction();
+
+        try{
+
+            const offerID = uuidv4(); // generating unique id for offer id
+            const currentProduct = await ProductDetails.findOne({
+                where:{
+                    [Sequelize.Op.or]:[{Product_Id:productId}]
+                }
+            }) // fetching current price
+
+            const offerPrice = currentProduct.Price - ((currentProduct.Price * offerPercentage)/100) // calculating offer price
+
+            const offerData = await OfferTable.create({
+                Product_id:productId,
+                offer_id:offerID,
+                offer_price:offerPrice,
+                offer_percentage:offerPercentage
+            },{transaction:t}) // inserting offer details to offer table
+
+            await t.commit() //committing transaction
+
+            return offerData
+        }catch(error){
+            await t.rollback();
+            throw new ApiError('500', error.message, "could't add offer")
         }
     }
 }
