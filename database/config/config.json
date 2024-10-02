@@ -8,9 +8,9 @@
   },
   "test": {
     "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
+    "password": "Sandeep@1999",
+    "database": "chefguard",
+    "host": "https://1bc9-2409-40f3-c2-a7b3-40f-fc56-37ef-1281.ngrok-free.app",
     "dialect": "mysql"
   },
   "production": {
