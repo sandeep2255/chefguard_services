@@ -3,7 +3,7 @@ const fs = require('fs');
 const { Sequelize } = require('sequelize');
 const configPath = path.join(__dirname, 'config', 'config.json');
 const rawdata = fs.readFileSync(configPath);
-const { username, password, database, host, dialect, port } = JSON.parse(rawdata)['test'];
+const { username, password, database, host, dialect, port } = JSON.parse(rawdata)['development'];
 
 
 const sequelize = new Sequelize(database, username, password, {

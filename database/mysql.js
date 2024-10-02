@@ -1,7 +1,7 @@
 const mysql = require("mysql2");
 
 const connection = mysql.createConnection({
-  host: "https://1bc9-2409-40f3-c2-a7b3-40f-fc56-37ef-1281.ngrok-free.app",
+  host: "localhost",
   user: "root",
   password: "Sandeep@1999",
   database: "chefguard",
