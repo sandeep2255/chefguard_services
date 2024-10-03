@@ -12,13 +12,7 @@
     "database": "chefguard",
     "host": "dpg-crv389dds78s73a7ejo0-a.oregon-postgres.render.com",
     "dialect": "postgres",
-    "port": 5432,
-    "dialectOptions": {
-      "ssl": {
-        "require": true,
-        "rejectUnauthorized": false
-      }
-    }
+    "port": 5432
   },
   "production": {
     "username": "root",
