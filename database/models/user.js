@@ -3,7 +3,7 @@ const { sequelize } = require('../index');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const User = sequelize.define('User', {
+const User = sequelize.define('Users', {
     firstName: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -34,8 +34,8 @@ const User = sequelize.define('User', {
         defaultValue: null,
       },
 }, {
-    sequelize,
-    modelName: 'users',
+    timestamps: true,
+    tableName: 'users',
 });
 
 // Define any associations here if needed in future
