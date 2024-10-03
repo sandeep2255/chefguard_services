@@ -8,10 +8,10 @@
   },
   "test": {
     "username": "root",
-    "password": "Sandeep@1999",
+    "password": "n60Syg9AiRu1ilLW22Fq1pwzc6bnQiTp",
     "database": "chefguard",
-    "host": "https://1bc9-2409-40f3-c2-a7b3-40f-fc56-37ef-1281.ngrok-free.app",
-    "dialect": "mysql"
+    "host": "dpg-crv389dds78s73a7ejo0-a",
+    "dialect": "postgres"
   },
   "production": {
     "username": "root",
