@@ -13,7 +13,7 @@ module.exports = {
       ProductId: {
         type: Sequelize.STRING,
         references: {
-          model: 'ProductDetails',
+          model: 'productdetails',
           key: 'Product_Id'
         },
         onUpdate: 'CASCADE',

@@ -35,7 +35,7 @@ const User = sequelize.define('User', {
       },
 }, {
     sequelize,
-    modelName: 'User',
+    modelName: 'users',
 });
 
 // Define any associations here if needed in future
