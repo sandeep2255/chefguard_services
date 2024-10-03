@@ -10,8 +10,15 @@
     "username": "root",
     "password": "n60Syg9AiRu1ilLW22Fq1pwzc6bnQiTp",
     "database": "chefguard",
-    "host": "dpg-crv389dds78s73a7ejo0-a",
-    "dialect": "postgres"
+    "host": "dpg-crv389dds78s73a7ejo0-a.oregon-postgres.render.com",
+    "dialect": "postgres",
+    "port": 5432,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   },
   "production": {
     "username": "root",
