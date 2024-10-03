@@ -18,9 +18,9 @@ const OfferTable = sequelize.define('OfferTable', {
     offer_price: DataTypes.DECIMAL(10, 2),
     offer_percentage: DataTypes.DECIMAL(5, 2),
 }, {
-    sequelize,
-    modelName: 'OfferTable',
-});
+    timestamps: true,
+    tableName: 'OfferTable',
+  });
 
 OfferTable.associate = (models) => {
     OfferTable.belongsTo(models.ProductDetails, {
