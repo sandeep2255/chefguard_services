@@ -8,5 +8,6 @@ const verifyJWT = require("../middleware/authMiddleware");
 const productController = require('../controller/productController')
 
 router.route("/createProducts").post(verifyJWT, productController.createProduct);
+router.route("/createMultipleProducts").post(verifyJWT, productController.createMultipleProducts)
 router.route("/createOffer").post(verifyJWT,productController.createOffer);
 module.exports = router;

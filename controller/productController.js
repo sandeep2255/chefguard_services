@@ -13,6 +13,15 @@ const createProduct = asyncHandler(async(req,res)=>{
     return res.json(new ApiResponse('200', responseData,'Success'))
 })
 
+const createMultipleProducts = asyncHandler(async(req,res)=>{
+    const productData = req.body
+    const responseData = await productServices.addMultipleItems(productData)
+    if (!responseData) {
+        throw new ApiError(400, 'Invalid product data');
+    }
+    return res.json(new ApiResponse('200', "All Data Inserted",'Success'))
+})
+
 const createOffer = asyncHandler(async(req,res)=>{
     const offerData = req.body
     const responseData = await productServices.addOfferItem(offerData)
@@ -25,5 +34,6 @@ const createOffer = asyncHandler(async(req,res)=>{
 
 module.exports={
     createProduct,
+    createMultipleProducts,
     createOffer,
 }
