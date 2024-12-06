@@ -25,13 +25,17 @@ app.use(errorHandler);
 
 const userRouter = require("./Routes/userRoutes");
 const productRoutes = require("./Routes/productRoutes.js");
+const { ProductDetails } = require("./database/models/productdetails.js");
+const { ProductFeatures } = require("./database/models/productfeatures.js");
+const { ProductImage } = require("./database/models/productimage.js");
+const { OfferTable } = require("./database/models/offertable.js");
 
 app.get("/", (req, res) => {
   res.send("hello World");
 });
 
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/product", productRoutes);
+app.use("/api/v1/userApi", userRouter);
+app.use("/api/v1/productApi", productRoutes);
 module.exports = { app };
 
 dotenv.config();
@@ -45,6 +49,13 @@ connectDB()
 // .catch((e) => {
 //     console.log("connection failed", e);
 // });
+const models = {
+  ProductFeatures:ProductFeatures,
+  ProductImage:ProductImage,
+  OfferTable:OfferTable
+}
+
+ProductDetails.associate(models);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

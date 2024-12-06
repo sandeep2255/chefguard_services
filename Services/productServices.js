@@ -24,8 +24,11 @@ class productServices {
                 { transaction: t } // transaction initiated
             ) // creating an entry to productDetails column and getting the values in newProductDetails
             // inserting product_features
+            await t.commit();
+
             let productFeatureData = []
             if (features && features.length > 0) {
+                const t = await sequelize.transaction();
                 productFeatureData = features.map((feature) => {
                     const feature_id = uuidv4()
                         return {
@@ -35,11 +38,13 @@ class productServices {
                         }
                 })
                 await ProductFeatures.bulkCreate(productFeatureData,{transaction:t})
+                await t.commit()
             }// creating an entry to productFeatures column and getting the values in productFeatureData
 
             // inserting product_features
             let productImageData = []
             if (images && images.length > 0) {
+                const t = await sequelize.transaction();
                 productImageData = images.map((image) => {
                     const image_id = uuidv4()
                         return {
@@ -51,9 +56,9 @@ class productServices {
                         }
                 })
                 await ProductImage.bulkCreate(productImageData,{transaction:t})
+                await t.commit(); // commiting transactions
             }// creating an entry to productImages column and getting the values in productImageData
 
-            await t.commit(); // commiting transactions
         
             return {
                 productDetails: newProductDetails, 
@@ -61,102 +66,187 @@ class productServices {
                 productImage:productImageData
             }
         } catch (error) {
-            await t.rollback();
+            // await t.rollback();
             throw new ApiError('500', error.message,"failed to add item");
         }
     }
 
     static async addMultipleItems(itemDetails){
-       const items = itemDetails.items
-       let productDetailsArr = []
-       let featureDetailsArr = []
-       let imageDetailsArr = []
-
-       const t = await sequelize.transaction();
-       try{
-           items.map((item)=>{
-                const productId = uuidv4(); // generating Unique id for product
-                const { productName, Model, Price, Description, features, images } = item
+        const items = itemDetails.items;
+        let productDetailsArr = [];
+        let featureDetailsArr = [];
+        let imageDetailsArr = [];
+    
+        const t = await sequelize.transaction();
+        try {
+            for (const item of items) {
+                const productId = uuidv4();
+                const { productName, Model, Price, Description, features, images } = item;
                 
                 let details = {
-                    Product_Id:productId,
+                    Product_Id: productId,
                     Product_name: productName,
                     Model: Model,
                     Price: Price,
                     Description: Description
-                }
+                };
                 productDetailsArr.push(details);
     
                 let featuredetails = {
-                    Product: productName,
+                    Product_name: productName,
                     Feature: features
-                }
+                };
                 featureDetailsArr.push(featuredetails);
     
                 let imagedetails = {
-                    Product: productName,
+                    Product_name: productName,
                     images: images
-                }
+                };
                 imageDetailsArr.push(imagedetails);
-           })// Bulk inserting product details to ProductDetail table
-           await ProductDetails.bulkCreate(productDetailsArr, {transaction:t});
-
-            if (featureDetailsArr && featureDetailsArr.length > 0) {
-                let productFeatureData =[]
-                featureDetailsArr.forEach(async (Allfeatures)=>{
-                    console.log("dsafsdafasfas",Allfeatures)
+            }
+    
+            await ProductDetails.bulkCreate(productDetailsArr, { transaction: t });
+            await t.commit()
+    
+            if (featureDetailsArr.length > 0) {
+                const productFeatureData = [];
+                const t = await sequelize.transaction();
+    
+                for (const Allfeatures of featureDetailsArr) {
+                    let Product_name = Allfeatures.Product_name;
                     const featureProductDetail = await ProductDetails.findOne({
-                            where: {
-                                product_name: Allfeatures.Product
-                            },
-                            attributes: ['id']
-                
+                        where: {
+                            [Sequelize.Op.or]: [{ Product_name }],
+                        },
                     });
-                    
-                    productFeatureData = Allfeatures.Feature.map((feature) => {
-                        const feature_id = uuidv4()
-                            return {
-                                Product_Id: featureProductDetail.Product_Id,
-                                Feature_Id: feature_id,
-                                Feature: feature
-                            }
-                    })
-                })
-                await ProductFeatures.bulkCreate(productFeatureData,{transaction:t})
-            }// creating an entry to productFeatures column and getting the values in productFeatureData
-
-            if (imageDetailsArr && imageDetailsArr.length > 0) {
-                let productImageData =[]
-                imageDetailsArr.forEach(async (AllImages)=>{
-                    
-                    let ImageProductDetail = await ProductDetails.findOne({
-                        where:{
-                            product_name:{
-
-                                [Sequelize.Op.in]:AllImages.product
-                            }
-                        }
+    
+                    let productFeatures = Allfeatures.Feature;
+                    for (const feature of productFeatures) {
+                        const feature_id = uuidv4();
+                        productFeatureData.push({
+                            Product_Id: featureProductDetail.Product_Id,
+                            Feature_Id: feature_id,
+                            Feature: feature
+                        });
+                    }
+                }
+                if (productFeatureData.length > 0) {
+                    await ProductFeatures.bulkCreate(productFeatureData, { transaction: t });
+                    await t.commit()
+                }
+            }
+    
+            if (imageDetailsArr.length > 0) {
+                const productImageData = [];
+                const t = await sequelize.transaction();
+    
+                for (const AllImages of imageDetailsArr) {
+                    let Product_name = AllImages.Product_name;
+                    const ImageProductDetail = await ProductDetails.findOne({
+                        where: {
+                            [Sequelize.Op.or]: [{ Product_name }],
+                        },
                     });
-                    productImageData = AllImages.images.map((image) => {
-                        const image_id = uuidv4()
-                            return {
-                                image_id:image_id,
-                                ProductId: ImageProductDetail.Product_Id,
-                                image_url: image.imageUrl,
-                                image_name: image.imageName,
-                                storage_platform: image.storage_platform
-                            }
-                    })
-                })
-                await ProductImage.bulkCreate(productImageData,{transaction:t})
-            }// creating multiple entry to productImages column and getting the values in productImageData
-            t.commit()
-       }catch(error){
-            t.rollback();
-            throw new ApiError('500', error.message,"failed to add items");
-       }
-
+    
+                    let productImages = AllImages.images;
+                    for (const image of productImages) {
+                        const image_id = uuidv4();
+                        productImageData.push({
+                            image_id: image_id,
+                            ProductId: ImageProductDetail.Product_Id,
+                            image_url: image.imageUrl,
+                            image_name: image.imageName,
+                            storage_platform: image.storage_platform
+                        });
+                    }
+                }
+    
+                if (productImageData.length > 0) {
+                    await ProductImage.bulkCreate(productImageData, { transaction: t });
+                    await t.commit()
+                }
+            }
+            
+            return {
+                productDetails: productDetailsArr
+            }
+        } catch (error) {
+            // Rollback transaction if any error occurs
+            // await t.rollback();
+            throw new ApiError('500', error.message, "failed to add items");
+        }
     }
+    
+    static async updateItems(productId, itemDetails) {
+        const { productName, Model, Price, Description, features, images } = itemDetails;
+        const t = await sequelize.transaction();
+    
+        try {
+            const existingProduct = await ProductDetails.findByPk(productId, { transaction: t });
+            if (!existingProduct) {
+                throw new ApiError('404', 'Product not found', `No product with ID ${productId} exists`);
+            }
+    
+            await ProductDetails.update(
+                {
+                    Product_name: productName,
+                    Model: Model,
+                    Price: Price,
+                    Description: Description
+                },
+                {
+                    where: { Product_Id: productId },
+                    transaction: t
+                }
+            );
+    
+            if (features && features.length > 0) {
+                await ProductFeatures.destroy({
+                    where: { Product_Id: productId },
+                    transaction: t
+                });
+    
+                const updatedFeatures = features.map((feature) => ({
+                    Product_Id: productId,
+                    Feature_Id: uuidv4(),
+                    Feature: feature
+                }));
+                await ProductFeatures.bulkCreate(updatedFeatures, { transaction: t });
+            }
+    
+            if (images && images.length > 0) {
+                // await ProductImage.destroy({
+                //     where: { ProductId: productId },
+                //     transaction: t
+                // });
+    
+                const updatedImages = images.map((image) => ({
+                    image_id: uuidv4(),
+                    ProductId: productId,
+                    image_url: image.imageUrl,
+                    image_name: image.imageName,
+                    storage_platform: image.storage_platform
+                }));
+                await ProductImage.bulkCreate(updatedImages, { transaction: t });
+            }
+    
+            await t.commit();
+    
+            const responseData =  {
+                    productId,
+                    productName,
+                    Model,
+                    Price,
+                    Description,
+                    features,
+                    images
+                };
+            return responseData;
+        } catch (error) {
+            await t.rollback();
+            throw new ApiError('500', error.message, 'Failed to update item');
+        }
+    }    
 
     static async addOfferItem(offerDetails){
         const {productId, offerPercentage} = offerDetails
