@@ -1,6 +1,5 @@
 const Sequelize = require("sequelize")
 const { ProductDetails } = require("../database/models/productdetails");
-const { ProductFeatures } = require("../database/models/productfeatures");
 const { ProductImage } = require("../database/models/productimage");
 const {OfferTable} = require("../database/models/offertable");
 const { sequelize } = require("../database/index");
@@ -9,7 +8,7 @@ const { ApiError } = require("../utils/ApiError");
 
 class productServices {
     static async addItem(itemDetails) {
-        const { productName, Model, Price, Description, features, images } = itemDetails
+        const { productName, Model, Price, Description, images } = itemDetails
         const t = await sequelize.transaction();
         try {
             const productId = uuidv4() // generating a unique id using uuid for product
@@ -25,21 +24,6 @@ class productServices {
             ) // creating an entry to productDetails column and getting the values in newProductDetails
             // inserting product_features
             await t.commit();
-
-            let productFeatureData = []
-            if (features && features.length > 0) {
-                const t = await sequelize.transaction();
-                productFeatureData = features.map((feature) => {
-                    const feature_id = uuidv4()
-                        return {
-                            Product_Id: newProductDetails.Product_Id,
-                            Feature_Id: feature_id,
-                            Feature: feature
-                        }
-                })
-                await ProductFeatures.bulkCreate(productFeatureData,{transaction:t})
-                await t.commit()
-            }// creating an entry to productFeatures column and getting the values in productFeatureData
 
             // inserting product_features
             let productImageData = []
@@ -62,7 +46,6 @@ class productServices {
         
             return {
                 productDetails: newProductDetails, 
-                productFeature:productFeatureData, 
                 productImage:productImageData
             }
         } catch (error) {
@@ -74,14 +57,13 @@ class productServices {
     static async addMultipleItems(itemDetails){
         const items = itemDetails.items;
         let productDetailsArr = [];
-        let featureDetailsArr = [];
         let imageDetailsArr = [];
     
         const t = await sequelize.transaction();
         try {
             for (const item of items) {
                 const productId = uuidv4();
-                const { productName, Model, Price, Description, features, images } = item;
+                const { productName, Model, Price, Description, images } = item;
                 
                 let details = {
                     Product_Id: productId,
@@ -92,12 +74,6 @@ class productServices {
                 };
                 productDetailsArr.push(details);
     
-                let featuredetails = {
-                    Product_name: productName,
-                    Feature: features
-                };
-                featureDetailsArr.push(featuredetails);
-    
                 let imagedetails = {
                     Product_name: productName,
                     images: images
@@ -107,34 +83,6 @@ class productServices {
     
             await ProductDetails.bulkCreate(productDetailsArr, { transaction: t });
             await t.commit()
-    
-            if (featureDetailsArr.length > 0) {
-                const productFeatureData = [];
-                const t = await sequelize.transaction();
-    
-                for (const Allfeatures of featureDetailsArr) {
-                    let Product_name = Allfeatures.Product_name;
-                    const featureProductDetail = await ProductDetails.findOne({
-                        where: {
-                            [Sequelize.Op.or]: [{ Product_name }],
-                        },
-                    });
-    
-                    let productFeatures = Allfeatures.Feature;
-                    for (const feature of productFeatures) {
-                        const feature_id = uuidv4();
-                        productFeatureData.push({
-                            Product_Id: featureProductDetail.Product_Id,
-                            Feature_Id: feature_id,
-                            Feature: feature
-                        });
-                    }
-                }
-                if (productFeatureData.length > 0) {
-                    await ProductFeatures.bulkCreate(productFeatureData, { transaction: t });
-                    await t.commit()
-                }
-            }
     
             if (imageDetailsArr.length > 0) {
                 const productImageData = [];

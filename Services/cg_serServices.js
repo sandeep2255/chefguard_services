@@ -1,8 +1,4 @@
 const Sequelize = require("sequelize")
-const { ProductDetails } = require("../database/models/productdetails");
-const { ProductFeatures } = require("../database/models/productfeatures");
-const { ProductImage } = require("../database/models/productimage");
-const {OfferTable} = require("../database/models/offertable");
 const { sequelize } = require("../database/index");
 const { v4: uuidv4 } = require('uuid');
 const { ApiError } = require("../utils/ApiError");
@@ -23,7 +19,7 @@ class cg_serServices {
                 },
                 { transaction: t } // transaction initiated
             ) // creating an entry to productDetails column and getting the values in newProductDetails
-        
+            await t.commit()
             return {
                 serviceDetails: newServiceDetails
             }

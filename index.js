@@ -27,7 +27,6 @@ const userRouter = require("./Routes/userRoutes");
 const productRoutes = require("./Routes/productRoutes.js");
 const serviceRoutes = require("./Routes/ServiceRoutes.js");
 const { ProductDetails } = require("./database/models/productdetails.js");
-const { ProductFeatures } = require("./database/models/productfeatures.js");
 const { ProductImage } = require("./database/models/productimage.js");
 const { OfferTable } = require("./database/models/offertable.js");
 
@@ -52,7 +51,6 @@ connectDB()
 //     console.log("connection failed", e);
 // });
 const models = {
-  ProductFeatures:ProductFeatures,
   ProductImage:ProductImage,
   OfferTable:OfferTable
 }

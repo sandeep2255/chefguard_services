@@ -31,10 +31,6 @@ const ProductDetails = sequelize.define('ProductDetails', {
 
 
 ProductDetails.associate = (models) => {
-    ProductDetails.hasMany(models.ProductFeatures, {
-        foreignKey: 'Product_Id',
-        as: 'features',
-    });
     ProductDetails.hasMany(models.OfferTable, {
         foreignKey: 'Product_id',
         as: 'offers',

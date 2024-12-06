@@ -1,7 +1,6 @@
 const { sequelize } = require("../database/index");
 const { OfferTable } = require("../database/models/offertable");
 const { ProductDetails } = require("../database/models/productdetails");
-const { ProductFeatures } = require("../database/models/productfeatures");
 const { ProductImage } = require("../database/models/productimage");
 const { errorHandler } = require("../middleware/errorHandler");
 const {productServices} = require("../Services/productServices")
@@ -61,12 +60,6 @@ const getProducts = asyncHandler(async(req,res,next)=>{
             {
                 include:[
                     {
-                        model:ProductFeatures,
-                        as: 'features',
-                        required:true,
-                        attributes:['Feature_Id', 'Feature']
-                    },
-                    {
                         model:ProductImage,
                         as:'images',
                         required:true,
@@ -100,12 +93,6 @@ const getOneProducts = asyncHandler(async(req,res,next)=>{
         let Details = await ProductDetails.findOne(
             {
                 include:[
-                    {
-                        model:ProductFeatures,
-                        as: 'features',
-                        required:true,
-                        attributes:['Feature_Id', 'Feature']
-                    },
                     {
                         model:ProductImage,
                         as:'images',
