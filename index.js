@@ -25,6 +25,7 @@ app.use(errorHandler);
 
 const userRouter = require("./Routes/userRoutes");
 const productRoutes = require("./Routes/productRoutes.js");
+const serviceRoutes = require("./Routes/ServiceRoutes.js");
 const { ProductDetails } = require("./database/models/productdetails.js");
 const { ProductFeatures } = require("./database/models/productfeatures.js");
 const { ProductImage } = require("./database/models/productimage.js");
@@ -36,6 +37,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/userApi", userRouter);
 app.use("/api/v1/productApi", productRoutes);
+app.use("/api/v1/serviceApi", serviceRoutes);
 module.exports = { app };
 
 dotenv.config();
