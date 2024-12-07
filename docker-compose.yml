@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: chefguard
+      MYSQL_DATABASE: chefguard
+      MYSQL_USER: root
+      MYSQL_PASSWORD: chefguard
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  nodejs:
+    build: .
+    container_name: node-container
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: your_username
+      DB_PASSWORD: your_password
+      DB_NAME: your_database_name
+
+volumes:
+  mysql_data:
