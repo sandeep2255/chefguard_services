@@ -3,7 +3,7 @@
     "username": "root",
     "password": "chefguard",
     "database": "chefguard",
-    "host": "127.0.0.1",
+    "host": "mysql",
     "dialect": "mysql"
   },
   "test": {
