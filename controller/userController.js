@@ -25,69 +25,84 @@ const generateAccessAndRefreshTokens = async (email) => {
   }
 };
 
-const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+const loginUser = asyncHandler(async (req, res, next) => {
 
-  if (!email) {
-    throw new ApiError(400, "Username or email is required");
+  try{
+    const { email, password } = req.body;
+  
+    if (!email) {
+      throw new ApiError(400, "Username or email is required");
+    }
+  
+    const member = await User.findOne({
+      where: {
+        [Sequelize.Op.or]: [{ email }],
+      },
+    });
+  
+    if (!member) {
+      throw new ApiError(404, "User does not exist");
+    }
+  
+    const isPasswordValid = await member.isPasswordCorrect(password);
+  
+    if (!isPasswordValid) {
+      throw new ApiError(401, "Invalid credentials");
+    }
+  
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(member.email);
+  
+    const loggedInUser = await User.findOne({
+      where: { email: member.email },
+      attributes: { exclude: ["password", "refreshToken"] },
+    });
+  
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+  
+    if(!loggedInUser){
+      return
+    }
+  
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
+  }catch(error){
+    next(error)
   }
 
-  const member = await User.findOne({
-    where: {
-      [Sequelize.Op.or]: [{ email }],
-    },
-  });
-
-  if (!member) {
-    throw new ApiError(404, "User does not exist");
-  }
-
-  const isPasswordValid = await member.isPasswordCorrect(password);
-
-  if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid credentials");
-  }
-
-  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(member.email);
-
-  const loggedInUser = await User.findOne({
-    where: { email: member.email },
-    attributes: { exclude: ["password", "refreshToken"] },
-  });
-
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
 });
 
-const logoutUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const member = await User.findOne({ where: { email: email } });
+const logoutUser = asyncHandler(async (req, res, next) => {
+  try{
+
+    const { email, password } = req.body;
+    const member = await User.findOne({ where: { email: email } });
+    
+    if (!member) {
+      throw new ApiError(404, "User not found");
+    }
   
-  if (!member) {
-    throw new ApiError(404, "User not found");
+    member.refreshToken = null;
+    await member.save();
+  
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+  
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new ApiResponse(200, {}, "Successfully logged out"));
+  }catch(error){
+    next(error)
   }
-
-  member.refreshToken = null;
-  await member.save();
-
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  return res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "Successfully logged out"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {

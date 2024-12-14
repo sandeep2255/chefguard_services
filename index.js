@@ -21,7 +21,6 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
-app.use(errorHandler);
 
 const userRouter = require("./Routes/userRoutes");
 const productRoutes = require("./Routes/productRoutes.js");
@@ -37,6 +36,8 @@ app.get("/", (req, res) => {
 app.use("/api/v1/userApi", userRouter);
 app.use("/api/v1/productApi", productRoutes);
 app.use("/api/v1/serviceApi", serviceRoutes);
+
+app.use(errorHandler);
 module.exports = { app };
 
 dotenv.config();
