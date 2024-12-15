@@ -1,5 +1,6 @@
 const { sequelize } = require("../database/index");
 const { ServiceDetails } = require("../database/models/servicedetails");
+const { ServiceImages } = require("../database/models/serviceImages");
 const { cg_serServices } = require("../Services/cg_serServices");
 const { ApiError } = require("../utils/ApiError");
 const { ApiResponse } = require("../utils/ApiResponse");
@@ -11,7 +12,15 @@ const Sequelize = require("sequelize");
 const createService = asyncHandler(async(req,res,next)=>{
     try{
         const ServiceData = req.body
-        const responseData = await cg_serServices.addItem(ServiceData)
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No files uploaded' });
+        }
+
+        const logo = req.files['logo'] ? req.files['logo'][0] : null;
+        const image = req.files['file'] || [];
+
+        const responseData = await cg_serServices.addItem(ServiceData,image, logo)
         if (!responseData) {
             throw new ApiError(400, 'Invalid product data');
         }
@@ -20,6 +29,47 @@ const createService = asyncHandler(async(req,res,next)=>{
         next(error)
     }
 })
+
+const addImage = asyncHandler(async(req,res,next)=>{
+    try{
+        const Service_Id = req.params.Service_Id;
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No files uploaded' });
+        }
+
+        const image = req.files
+
+        const serviceDetails = await ServiceDetails.findOne({ where: { Service_Id } });
+        if (!serviceDetails) {
+            throw new ApiError(404, `Service with ID ${Service_Id} not found`);
+        }
+
+       
+        var data = await cg_serServices.addImageToService(Service_Id, image)
+        res.status(200).json(new ApiResponse('200', data, 'Image uploaded successfully'));
+    }catch(error){
+        next(error);
+    }
+});
+
+const deleteImage = asyncHandler(async (req,res,next)=>{
+    try{
+        const image_id = req.params.image_id;
+        console.log(image_id)
+
+        const imageDetails = await ServiceImages.findOne({ where: { image_id } });
+        if (!imageDetails) {
+            throw new ApiError(404, `service image with ID ${Product_Id} not found`);
+        }
+
+       
+        await cg_serServices.deleteImageofServices(imageDetails.image_name)
+        res.status(200).json(new ApiResponse('200', null, 'Image deleted successfully'));
+
+    }catch(error){
+        next(error)
+    }
+});
 
 const createMultipleService = asyncHandler(async(req,res, next)=>{
     try{
@@ -76,13 +126,14 @@ const updateService = asyncHandler(async(req,res,next)=>{
     try{
         let Service_Id = req.params.Service_Id;
         const itemDetails = req.body
+        const imageData = req.files
 
         const services = await ServiceDetails.findByPk(Service_Id)
         if(!services){
             throw new ApiError(400, 'Product Not Found');
         }
 
-        const responseData = await cg_serServices.updateItems(Service_Id, itemDetails)
+        const responseData = await cg_serServices.updateItems(Service_Id, itemDetails, imageData)
         if (!responseData) {
             throw new ApiError(400, 'Invalid product data');
         }
@@ -100,9 +151,9 @@ const deleteService = asyncHandler(async (req, res, next) => {
         const t = await sequelize.transaction();
 
         try {
-            const product = await ServiceDetails.findOne({ where: { Service_Id } });
-            if (!product) {
-                throw new ApiError(404, `Product with ID ${Service_Id} not found`);
+            const service = await ServiceDetails.findOne({ where: { Service_Id } });
+            if (!service) {
+                throw new ApiError(404, `service with ID ${Service_Id} not found`);
             }
 
             await ServiceDetails.destroy({ where: { Service_Id }, transaction: t });
@@ -126,5 +177,7 @@ module.exports={
     getServices,
     getOneService,
     updateService,
-    deleteService
+    deleteService,
+    addImage,
+    deleteImage
 }

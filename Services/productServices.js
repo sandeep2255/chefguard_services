@@ -4,14 +4,47 @@ const { ProductImage } = require("../database/models/productimage");
 const {OfferTable} = require("../database/models/offertable");
 const { sequelize } = require("../database/index");
 const { v4: uuidv4 } = require('uuid');
+const {} = require("./cloudinary_services");
 const { ApiError } = require("../utils/ApiError");
+const { Readable } =  require('stream')
+const {cloudinaryServices} = require('./cloudinary_services')
 
 class productServices {
-    static async addItem(itemDetails) {
-        const { productName, Model, Price, Description, images } = itemDetails
+    static async addItem(itemDetails, imageData) {
+        const { productName, Model, Price, Description } = itemDetails
+
+        // const fileDetails = imageData.map(image => ({
+        //     originalName: file.originalname,
+        //     fileName: file.filename,
+        //     path: file.path,
+        //     size: file.size
+            
+        // }));
+        const existingProduct = await ProductDetails.findOne({
+            where: {
+              Product_name: productName,
+              Model: Model
+            }
+          });
+
+        if (existingProduct){
+            throw new ApiError('409',"Item already exist");
+        }
+
+        const uploadPromises = imageData.map(async (image) => {
+            const fileName = image.originalname;
+            const fileBuffer = image.buffer;
+        
+            const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+        
+            return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+        });
+        
+        const images = await Promise.all(uploadPromises);
+
         const t = await sequelize.transaction();
         try {
-            const productId = uuidv4() // generating a unique id using uuid for product
+            const productId = uuidv4()
             const newProductDetails = await ProductDetails.create(
                 {
                     Product_Id:productId,
@@ -20,12 +53,10 @@ class productServices {
                     Price: Price,
                     Description: Description
                 },
-                { transaction: t } // transaction initiated
-            ) // creating an entry to productDetails column and getting the values in newProductDetails
-            // inserting product_features
+                { transaction: t }
+            )
             await t.commit();
 
-            // inserting product_features
             let productImageData = []
             if (images && images.length > 0) {
                 const t = await sequelize.transaction();
@@ -34,9 +65,9 @@ class productServices {
                         return {
                             image_id:image_id,
                             ProductId: newProductDetails.Product_Id,
-                            image_url: image.imageUrl,
-                            image_name: image.imageName,
-                            storage_platform: image.storage_platform
+                            image_url: image.url,
+                            image_name: image.public_id,
+                            storage_platform: 'CLOUDINARY'
                         }
                 })
                 await ProductImage.bulkCreate(productImageData,{transaction:t})
@@ -125,8 +156,8 @@ class productServices {
         }
     }
     
-    static async updateItems(productId, itemDetails) {
-        const { productName, Model, Price, Description, features, images } = itemDetails;
+    static async updateItems(productId, itemDetails, imageData) {
+        const { productName, Model, Price, Description, features } = itemDetails;
         const t = await sequelize.transaction();
     
         try {
@@ -134,6 +165,17 @@ class productServices {
             if (!existingProduct) {
                 throw new ApiError('404', 'Product not found', `No product with ID ${productId} exists`);
             }
+
+            // let fileName = imageData.originalname
+
+            // let fileBuffer = imageData.buffer;
+
+
+            // const cloudinaryClient = await cloudinaryServices.cloudinaryConfig()
+            
+            // const details = await cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName)
+
+            // const images = [details];
     
             await ProductDetails.update(
                 {
@@ -148,35 +190,21 @@ class productServices {
                 }
             );
     
-            if (features && features.length > 0) {
-                await ProductFeatures.destroy({
-                    where: { Product_Id: productId },
-                    transaction: t
-                });
+            // if (images && images.length > 0) {
+            //     // await ProductImage.destroy({
+            //     //     where: { ProductId: productId },
+            //     //     transaction: t
+            //     // });
     
-                const updatedFeatures = features.map((feature) => ({
-                    Product_Id: productId,
-                    Feature_Id: uuidv4(),
-                    Feature: feature
-                }));
-                await ProductFeatures.bulkCreate(updatedFeatures, { transaction: t });
-            }
-    
-            if (images && images.length > 0) {
-                // await ProductImage.destroy({
-                //     where: { ProductId: productId },
-                //     transaction: t
-                // });
-    
-                const updatedImages = images.map((image) => ({
-                    image_id: uuidv4(),
-                    ProductId: productId,
-                    image_url: image.imageUrl,
-                    image_name: image.imageName,
-                    storage_platform: image.storage_platform
-                }));
-                await ProductImage.bulkCreate(updatedImages, { transaction: t });
-            }
+            //     const updatedImages = images.map((image) => ({
+            //         image_id: uuidv4(),
+            //         ProductId: productId,
+            //         image_url: image.url,
+            //         image_name: image.public_id,
+            //         storage_platform: 'CLOUDINARY'
+            //     }));
+            //     await ProductImage.bulkCreate(updatedImages, { transaction: t });
+            // }
     
             await t.commit();
     
@@ -186,8 +214,6 @@ class productServices {
                     Model,
                     Price,
                     Description,
-                    features,
-                    images
                 };
             return responseData;
         } catch (error) {
@@ -195,6 +221,65 @@ class productServices {
             throw new ApiError('500', error.message, 'Failed to update item');
         }
     }    
+
+    static async addImageToProduct(productId, imageData){
+        const t = await sequelize.transaction();
+        var updatedImages = null;
+        try{
+
+
+            const uploadPromises = imageData.map(async (image) => {
+                const fileName = image.originalname;
+                const fileBuffer = image.buffer;
+            
+                const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+            
+                return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+            });
+            
+            const images = await Promise.all(uploadPromises);
+
+            if (images && images.length > 0) {
+                // await ProductImage.destroy({
+                //     where: { ProductId: productId },
+                //     transaction: t
+                // });
+
+                updatedImages = images.map((image) => ({
+                    image_id: uuidv4(),
+                    ProductId: productId,
+                    image_url: image.url,
+                    image_name: image.public_id,
+                    storage_platform: 'CLOUDINARY'
+                }));
+                await ProductImage.bulkCreate(updatedImages, { transaction: t });
+            }
+            await t.commit();
+            return updatedImages;
+
+        }catch(error){
+            await t.rollback();
+            throw new ApiError('500', error.message, 'Failed to upload item');
+        }
+        
+    }
+
+    static async deleteImageofProducts(image_id){
+        const t = await sequelize.transaction();
+        try{
+
+            const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+            await cloudinaryServices.deleteFile(cloudinaryClient,image_id)
+
+            await t.commit()
+            return image_id
+
+        }catch(error){
+            await t.rollback();
+            throw new ApiError('500', error.message, 'Failed to delete item');
+        }
+
+    }
 
     static async addOfferItem(offerDetails){
         const {productId, offerPercentage} = offerDetails

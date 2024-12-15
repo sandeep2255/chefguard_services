@@ -14,7 +14,15 @@ const Sequelize = require("sequelize");
 const createProduct = asyncHandler(async(req,res,next)=>{
     try{
         const productData = req.body
-        const responseData = await productServices.addItem(productData)
+        
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No files uploaded' });
+        }
+
+        const image = req.files
+
+        const responseData = await productServices.addItem(productData, image)
         if (!responseData) {
             throw new ApiError(400, 'Invalid product data');
         }
@@ -197,6 +205,50 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
     }
 });
 
+const deleteImage = asyncHandler(async (req,res,next)=>{
+    try{
+        const image_id = req.params.image_id;
+        console.log(image_id)
+
+        const imageDetails = await ProductImage.findOne({ where: { image_id } });
+        if (!imageDetails) {
+            throw new ApiError(404, `Product with ID ${Product_Id} not found`);
+        }
+
+        console.log(imageDetails.image_name)
+       
+        await productServices.deleteImageofProducts(imageDetails.image_name)
+        res.status(200).json(new ApiResponse('200', null, 'Image deleted successfully'));
+
+    }catch(error){
+        next(error)
+    }
+});
+
+const addImage = asyncHandler(async (req,res,next)=>{
+    try{
+        const Product_Id = req.params.Product_Id;
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No files uploaded' });
+        }
+
+        const image = req.files
+
+        const productDetails = await ProductDetails.findOne({ where: { Product_Id } });
+        if (!productDetails) {
+            throw new ApiError(404, `Product with ID ${Product_Id} not found`);
+        }
+
+       
+        var data = await productServices.addImageToProduct(Product_Id, image)
+        res.status(200).json(new ApiResponse('200', data, 'Image uploaded successfully'));
+
+    }catch(error){
+        next(error)
+    }
+});
+
+
 
 module.exports={
     createProduct,
@@ -205,5 +257,7 @@ module.exports={
     updateProducts,
     getOneProducts,
     getProducts,
-    deleteProduct
+    deleteProduct,
+    deleteImage,
+    addImage
 }

@@ -25,4 +25,12 @@ const ServiceDetails = sequelize.define('ServiceDetails', {
   tableName: 'servicedetails',
 });
 
+ServiceDetails.associate = (models) => {
+
+  ServiceDetails.hasMany(models.ServiceImages, {
+      foreignKey: 'Service_Id',
+      as: 'images',
+  });
+};
+
 module.exports = {ServiceDetails};

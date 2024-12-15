@@ -3,10 +3,29 @@ const { sequelize } = require("../database/index");
 const { v4: uuidv4 } = require('uuid');
 const { ApiError } = require("../utils/ApiError");
 const { ServiceDetails } = require("../database/models/servicedetails");
+const {cloudinaryServices} = require('./cloudinary_services');
+const { ServiceImages } = require("../database/models/serviceImages");
 
 class cg_serServices {
-    static async addItem(itemDetails) {
-        const { Service_name, Logo_url, Description } = itemDetails
+    static async addItem(itemDetails, imageData, logoData) {
+        const { Service_name, Description } = itemDetails
+
+        const logoName = logoData.originalname;
+        const logoBuffer = logoData.buffer;
+        const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+        const logo_details = await cloudinaryServices.uploadFile(cloudinaryClient, logoBuffer, logoName);
+
+        const uploadPromises = imageData.map(async (image) => {
+            const fileName = image.originalname;
+            const fileBuffer = image.buffer;
+        
+            // const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+        
+            return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+        });
+
+        const images = await Promise.all(uploadPromises);
+
         const t = await sequelize.transaction();
         try {
             const Service_Id = uuidv4() // generating a unique id using uuid for product
@@ -14,14 +33,31 @@ class cg_serServices {
                 {
                     Service_Id:Service_Id,
                     Service_name: Service_name,
-                    Logo_url: Logo_url,
+                    Logo_url: logo_details.url,
                     Description: Description
                 },
                 { transaction: t } // transaction initiated
             ) // creating an entry to productDetails column and getting the values in newProductDetails
             await t.commit()
+            let serviceImageData = []
+            if (images && images.length > 0) {
+                const t = await sequelize.transaction();
+                serviceImageData = images.map((image) => {
+                    const image_id = uuidv4()
+                        return {
+                            image_id:image_id,
+                            Service_Id: newServiceDetails.Service_Id,
+                            image_url: image.url,
+                            image_name: image.public_id,
+                            storage_platform: 'CLOUDINARY'
+                        }
+                })
+                await ServiceImages.bulkCreate(serviceImageData,{transaction:t})
+                await t.commit(); // commiting transactions
+            }
             return {
-                serviceDetails: newServiceDetails
+                serviceDetails: newServiceDetails,
+                serviceImageData:serviceImageData
             }
         } catch (error) {
             // await t.rollback();
@@ -61,8 +97,14 @@ class cg_serServices {
         }
     }
     
-    static async updateItems(Service_Id, itemDetails) {
+    static async updateItems(Service_Id, itemDetails, imageData) {
         const { Service_name, Logo_url, Description } = itemDetails
+        const fileName = imageData.originalname;
+        const fileBuffer = imageData.buffer;
+    
+        const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+    
+        const uploadDetails = await cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
         const t = await sequelize.transaction();
     
         try {
@@ -74,7 +116,7 @@ class cg_serServices {
             await ServiceDetails.update(
                 {
                     Service_name: Service_name,
-                    Logo_url: Logo_url,
+                    Logo_url: uploadDetails.url,
                     Description: Description
                 },
                 {
@@ -95,7 +137,66 @@ class cg_serServices {
             await t.rollback();
             throw new ApiError('500', error.message, 'Failed to update item');
         }
-    }    
+    }
+
+    static async addImageToService(serviceId, imageData){
+        const t = await sequelize.transaction();
+        var updatedImages = null;
+        try{
+
+
+            const uploadPromises = imageData.map(async (image) => {
+                const fileName = image.originalname;
+                const fileBuffer = image.buffer;
+            
+                const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+            
+                return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+            });
+            
+            const images = await Promise.all(uploadPromises);
+
+            if (images && images.length > 0) {
+                // await ProductImage.destroy({
+                //     where: { ProductId: productId },
+                //     transaction: t
+                // });
+
+                updatedImages = images.map((image) => ({
+                    image_id: uuidv4(),
+                    Service_Id: serviceId,
+                    image_url: image.url,
+                    image_name: image.public_id,
+                    storage_platform: 'CLOUDINARY'
+                }));
+                await ServiceImages.bulkCreate(updatedImages, { transaction: t });
+            }
+            await t.commit();
+            return updatedImages;
+
+        }catch(error){
+            await t.rollback();
+            throw new ApiError('500', error.message, 'Failed to upload item');
+        }
+        
+    }
+
+    static async deleteImageofServices(image_id){
+        const t = await sequelize.transaction();
+        try{
+
+            const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+            await cloudinaryServices.deleteFile(cloudinaryClient,image_id)
+
+            await t.commit()
+            return image_id
+
+        }catch(error){
+            await t.rollback();
+            throw new ApiError('500', error.message, 'Failed to delete item');
+        }
+
+    }
 
 }
 

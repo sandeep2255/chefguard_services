@@ -5,11 +5,18 @@ const router = express.Router();
 // const refreshAccessToken = require("../controller/userController");
 const serviceController = require("../controller/serviceController");
 const verifyJWT = require("../middleware/authMiddleware");
+const multer = require('multer');
+const upload = multer();
 
-router.route("/Services").post(verifyJWT, serviceController.createService);
+router.route("/Services").post(verifyJWT, upload.fields([
+    { name: 'file', maxCount: 10 },
+    { name: 'logo', maxCount: 1 }
+  ]), serviceController.createService);
 router.route("/MultipleServices").post(verifyJWT, serviceController.createMultipleService)
 router.route("/Services").get(serviceController.getServices);
-router.route("/Services/:Service_Id").put(serviceController.updateService);
+router.route("/Services/:Service_Id").put(verifyJWT,upload.array('file'),serviceController.updateService);
 router.route("/Services/:Service_Id").get(serviceController.getOneService);
-router.route("/Services/:Service_Id").delete(serviceController.deleteService);
+router.route("/Services/:Service_Id").delete(verifyJWT,serviceController.deleteService);
+router.route("/Services/image/:image_id").delete(verifyJWT,serviceController.deleteImage);
+router.route("/Services/image/:Service_Id").put(verifyJWT,upload.array('file'),serviceController.addImage);
 module.exports = router;
