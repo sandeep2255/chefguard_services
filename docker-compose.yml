@@ -26,6 +26,8 @@ services:
       DB_USER: root
       DB_PASSWORD: chefguard
       DB_NAME: chefguard
+    command: >
+      sh -c "cd database && npx sequelize db:migrate && npm start"
 
 volumes:
   mysql_data:

@@ -28,6 +28,8 @@ const serviceRoutes = require("./Routes/ServiceRoutes.js");
 const { ProductDetails } = require("./database/models/productdetails.js");
 const { ProductImage } = require("./database/models/productimage.js");
 const { OfferTable } = require("./database/models/offertable.js");
+const { ServiceImages } = require("./database/models/serviceImages.js");
+const { ServiceDetails } = require("./database/models/servicedetails.js");
 
 app.get("/", (req, res) => {
   res.send("hello World");
@@ -56,7 +58,12 @@ const models = {
   OfferTable:OfferTable
 }
 
+const service_models = {
+  ServiceImages:ServiceImages
+}
+
 ProductDetails.associate(models);
+ServiceDetails.associate(service_models);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

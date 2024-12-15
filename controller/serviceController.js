@@ -88,9 +88,20 @@ const createMultipleService = asyncHandler(async(req,res, next)=>{
 const getServices = asyncHandler(async(req,res,next)=>{
     try{
         responseData = [];
-
-        let Details = await ServiceDetails.findAll();
-          
+        
+        let Details = await ServiceDetails.findAll(
+            {
+                include:[
+                    {
+                        model:ServiceImages,
+                        as:'images',
+                        required:true,
+                        attributes:['image_id','image_url','image_name','storage_platform']
+                    }
+                ]
+            }
+        );
+            
         responseData.push(Details);
         if(!responseData){
             throw new ApiError(400, 'Invalid offer data');
@@ -108,7 +119,15 @@ const getOneService = asyncHandler(async(req,res,next)=>{
 
         let Details = await ServiceDetails.findOne(
             {
-                where:[{Service_Id}]
+                include:[
+                            {
+                                model:ServiceImages,
+                                as:'images',
+                                required:true,
+                                attributes:['image_id','image_url','image_name','storage_platform']
+                            },
+                        ],
+                    where:[{Service_Id}]
             }
         );
           
