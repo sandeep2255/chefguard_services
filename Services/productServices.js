@@ -156,8 +156,8 @@ class productServices {
         }
     }
     
-    static async updateItems(productId, itemDetails, imageData) {
-        const { productName, Model, Price, Description, features } = itemDetails;
+    static async updateItems(productId, itemDetails) {
+        const { productName, Model, Price, Description } = itemDetails;
         const t = await sequelize.transaction();
     
         try {
@@ -264,15 +264,20 @@ class productServices {
         
     }
 
-    static async deleteImageofProducts(image_id){
+    static async deleteImageofProducts(image_name,image_id){
         const t = await sequelize.transaction();
         try{
 
             const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
-            await cloudinaryServices.deleteFile(cloudinaryClient,image_id)
+            await cloudinaryServices.deleteFile(cloudinaryClient,image_name)
+
+            await ProductImage.destroy({
+                where: { image_id: image_id },
+                transaction: t
+            })
 
             await t.commit()
-            return image_id
+            return image_name
 
         }catch(error){
             await t.rollback();

@@ -70,7 +70,7 @@ const getProducts = asyncHandler(async(req,res,next)=>{
                     {
                         model:ProductImage,
                         as:'images',
-                        required:true,
+                        required:false,
                         attributes:['image_id','image_url','image_name','storage_platform']
                     },
                     {
@@ -104,7 +104,7 @@ const getOneProducts = asyncHandler(async(req,res,next)=>{
                     {
                         model:ProductImage,
                         as:'images',
-                        required:true,
+                        required:false,
                         attributes:['image_id','image_url','image_name','storage_platform']
                     },
                     {
@@ -132,7 +132,7 @@ const updateProducts = asyncHandler(async(req,res,next)=>{
     try{
         let Product_Id = req.params.Product_Id;
         const itemDetails = req.body
-        const { productName, Model, Price, Description, features, images } = itemDetails
+        const { productName, Model, Price, Description } = itemDetails
         let Product_name = productName
 
         // const productId = await ProductDetails.findOne({
@@ -208,16 +208,12 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
 const deleteImage = asyncHandler(async (req,res,next)=>{
     try{
         const image_id = req.params.image_id;
-        console.log(image_id)
-
         const imageDetails = await ProductImage.findOne({ where: { image_id } });
         if (!imageDetails) {
             throw new ApiError(404, `Product with ID ${Product_Id} not found`);
         }
-
-        console.log(imageDetails.image_name)
        
-        await productServices.deleteImageofProducts(imageDetails.image_name)
+        await productServices.deleteImageofProducts(imageDetails.image_name, image_id)
         res.status(200).json(new ApiResponse('200', null, 'Image deleted successfully'));
 
     }catch(error){
