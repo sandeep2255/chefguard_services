@@ -170,12 +170,12 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
 
             // await ProductFeatures.destroy({ where: { Product_Id }, transaction: t });
             // await ProductImage.destroy({ where: { ProductId: Product_Id }, transaction: t });
-            if (ProductFeatures.rawAttributes['Product_Id']) {
-                const deletedOffers = await ProductFeatures.destroy({ where: { Product_id: Product_Id }, transaction: t });
-                console.log(`Deleted ${deletedOffers} features`);
-            } else {
-                console.log(`Skipping offer deletion as 'Product_id' does not exist in ProductFeatures.`);
-            }
+            // if (OfferTable.rawAttributes['Product_Id']) {
+            //     const deletedOffers = await OfferTable.destroy({ where: { Product_id: Product_Id }, transaction: t });
+            //     console.log(`Deleted ${deletedOffers} features`);
+            // } else {
+            //     console.log(`Skipping offer deletion as 'Product_id' does not exist in ProductFeatures.`);
+            // }
 
             if (ProductImage.rawAttributes['ProductId']) {
                 const deletedOffers = await ProductImage.destroy({ where: { ProductId: Product_Id }, transaction: t });
