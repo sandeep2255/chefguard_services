@@ -201,12 +201,16 @@ class cg_serServices {
         
     }
 
-    static async deleteImageofServices(image_id){
+    static async deleteImageofServices(image_name, image_id){
         const t = await sequelize.transaction();
         try{
 
             const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
-            await cloudinaryServices.deleteFile(cloudinaryClient,image_id)
+            await cloudinaryServices.deleteFile(cloudinaryClient,image_name)
+
+            await ServiceImages.destroy({
+                where:{image_id:image_id}
+            });
 
             await t.commit()
             return image_id

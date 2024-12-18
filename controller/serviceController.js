@@ -55,7 +55,6 @@ const addImage = asyncHandler(async(req,res,next)=>{
 const deleteImage = asyncHandler(async (req,res,next)=>{
     try{
         const image_id = req.params.image_id;
-        console.log(image_id)
 
         const imageDetails = await ServiceImages.findOne({ where: { image_id } });
         if (!imageDetails) {
@@ -63,7 +62,7 @@ const deleteImage = asyncHandler(async (req,res,next)=>{
         }
 
        
-        await cg_serServices.deleteImageofServices(imageDetails.image_name)
+        await cg_serServices.deleteImageofServices(imageDetails.image_name, image_id)
         res.status(200).json(new ApiResponse('200', null, 'Image deleted successfully'));
 
     }catch(error){
