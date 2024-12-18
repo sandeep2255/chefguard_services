@@ -10,10 +10,21 @@ class cg_serServices {
     static async addItem(itemDetails, imageData, logoData) {
         const { Service_name, Description } = itemDetails
 
+        const existingService = await ServiceDetails.findOne({
+            where: {
+                Service_name: Service_name,
+            }
+        });
+
+        if (existingService){
+            throw new ApiError('409',"Item already exist");
+        }
+        
+
         const logoName = logoData.originalname;
         const logoBuffer = logoData.buffer;
         const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
-        const logo_details = await cloudinaryServices.uploadFile(cloudinaryClient, logoBuffer, logoName);
+        const logo_details = await cloudinaryServices.uploadFile(cloudinaryClient, logoBuffer, logoName, '75', '55');
 
         const uploadPromises = imageData.map(async (image) => {
             const fileName = image.originalname;
@@ -21,7 +32,7 @@ class cg_serServices {
         
             // const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
         
-            return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+            return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '290', '102');
         });
 
         const images = await Promise.all(uploadPromises);
@@ -99,12 +110,23 @@ class cg_serServices {
     
     static async updateItems(Service_Id, itemDetails, imageData) {
         const { Service_name, Logo_url, Description } = itemDetails
-        const fileName = imageData.originalname;
-        const fileBuffer = imageData.buffer;
-    
-        const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
-    
-        const uploadDetails = await cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+        const imageValid = imageData && imageData[0];
+
+        let updateData = {
+            Service_name: Service_name, // Always update Service_name
+            Description: Description,  // Include Description by default
+        };
+
+        if(imageValid){
+
+            const fileName = imageData.originalname;
+            const fileBuffer = imageData.buffer;
+        
+            const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
+        
+            const uploadDetails = await cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '75', '55');
+            updateData.Logo_url = uploadDetails.url;
+        }
         const t = await sequelize.transaction();
     
         try {
@@ -112,18 +134,16 @@ class cg_serServices {
             if (!existingProduct) {
                 throw new ApiError('404', 'Service not found', `No Service with ID ${Service_Id} exists`);
             }
+
     
             await ServiceDetails.update(
-                {
-                    Service_name: Service_name,
-                    Logo_url: uploadDetails.url,
-                    Description: Description
-                },
+                updateData,
                 {
                     where: { Service_Id: Service_Id },
                     transaction: t
                 }
             );
+
             await t.commit();
     
             const responseData =  {
@@ -151,7 +171,7 @@ class cg_serServices {
             
                 const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
             
-                return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName);
+                return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '290', '102');
             });
             
             const images = await Promise.all(uploadPromises);

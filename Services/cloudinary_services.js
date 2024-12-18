@@ -26,7 +26,7 @@ class cloudinaryServices {
      * @param {string} fileName - The public ID for the uploaded image.
      * @returns {Promise} Resolves with the Cloudinary upload result or rejects with an error.
      */
-    static async uploadFile(cloudinaryClient, imgBuffer, fileName) {
+    static async uploadFile(cloudinaryClient, imgBuffer, fileName, width,height) {
         return new Promise((resolve, reject) => {
             if (!imgBuffer || !Buffer.isBuffer(imgBuffer)) {
                 return reject(new Error('Invalid image buffer.'));
@@ -40,6 +40,9 @@ class cloudinaryServices {
                 {
                     resource_type: 'image',
                     public_id: fileName,
+                    width: width,
+                    height: height,
+                    crop: 'scale',
                 },
                 (error, result) => {
                     if (error) {

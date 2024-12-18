@@ -149,12 +149,12 @@ const updateService = asyncHandler(async(req,res,next)=>{
 
         const services = await ServiceDetails.findByPk(Service_Id)
         if(!services){
-            throw new ApiError(400, 'Product Not Found');
+            throw new ApiError(400, 'service Not Found');
         }
 
         const responseData = await cg_serServices.updateItems(Service_Id, itemDetails, imageData)
         if (!responseData) {
-            throw new ApiError(400, 'Invalid product data');
+            throw new ApiError(400, 'Invalid service data');
         }
 
         return res.json(new ApiResponse('200',responseData, 'Sucessfully Updated'))
@@ -176,6 +176,8 @@ const deleteService = asyncHandler(async (req, res, next) => {
             }
 
             await ServiceDetails.destroy({ where: { Service_Id }, transaction: t });
+
+            await ServiceImages.destroy({where: { Service_Id }, transaction: t})
 
             await t.commit();
 

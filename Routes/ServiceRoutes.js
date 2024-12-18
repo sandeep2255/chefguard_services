@@ -14,7 +14,7 @@ router.route("/Services").post(verifyJWT, upload.fields([
   ]), serviceController.createService);
 router.route("/MultipleServices").post(verifyJWT, serviceController.createMultipleService)
 router.route("/Services").get(serviceController.getServices);
-router.route("/Services/:Service_Id").put(verifyJWT,upload.array('file'),serviceController.updateService);
+router.route("/Services/:Service_Id").put(verifyJWT,upload.single('logo'),serviceController.updateService);
 router.route("/Services/:Service_Id").get(serviceController.getOneService);
 router.route("/Services/:Service_Id").delete(verifyJWT,serviceController.deleteService);
 router.route("/Services/image/:image_id").delete(verifyJWT,serviceController.deleteImage);
