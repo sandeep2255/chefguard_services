@@ -51,6 +51,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Invalid credentials");
     }
   
+    console.log("loggedinuser", member.email, email)
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(member.email);
   
     const loggedInUser = await User.findOne({
@@ -58,7 +59,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       attributes: { exclude: ["password", "refreshToken"] },
     });
 
-    console.log("loggedinuser", member.email, email, loggedInUser)
+    
   
     const options = {
       httpOnly: true,
