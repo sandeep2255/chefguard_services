@@ -39,6 +39,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
         [Sequelize.Op.or]: [{ email }],
       },
     });
+
+    console.log(member)
   
     if (!member) {
       throw new ApiError(404, "User does not exist");
