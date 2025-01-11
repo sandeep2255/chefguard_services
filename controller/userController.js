@@ -44,6 +44,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
     if (!member) {
       throw new ApiError(404, "User does not exist");
     }
+
+    console.log("loggedinuser", member.email, email)
   
     const isPasswordValid = await member.isPasswordCorrect(password);
   
