@@ -58,7 +58,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       attributes: { exclude: ["password", "refreshToken"] },
     });
 
-    console.log("loggedinuser", loggedInUser)
+    console.log("loggedinuser", member.email, email, loggedInUser)
   
     const options = {
       httpOnly: true,
