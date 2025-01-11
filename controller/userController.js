@@ -45,7 +45,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       throw new ApiError(404, "User does not exist");
     }
 
-    console.log("loggedinuser", member.email, email)
+    
   
     const isPasswordValid = await member.isPasswordCorrect(password);
   
@@ -78,6 +78,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       .cookie("refreshToken", refreshToken, options)
       .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
   }catch(error){
+    console.log(error)
     next(error)
   }
 
