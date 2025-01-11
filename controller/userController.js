@@ -40,7 +40,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
       },
     });
 
-    console.log(member)
   
     if (!member) {
       throw new ApiError(404, "User does not exist");
@@ -58,6 +57,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
       where: { email: member.email },
       attributes: { exclude: ["password", "refreshToken"] },
     });
+
+    console.log("loggedinuser", loggedInUser)
   
     const options = {
       httpOnly: true,
