@@ -347,7 +347,7 @@ class productServices {
         try{
 
             const offerID = uuidv4(); // generating unique id for offer id
-            const currentProduct = await OfferTable.findOne({
+            const currentProduct = await ProductDetails.findOne({
                 where:{
                     [Sequelize.Op.or]:[{Product_Id:productId}]
                 }
