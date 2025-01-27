@@ -18,5 +18,8 @@ router.route("/Services/:Service_Id").put(verifyJWT,upload.single('logo'),servic
 router.route("/Services/:Service_Id").get(serviceController.getOneService);
 router.route("/Services/:Service_Id").delete(verifyJWT,serviceController.deleteService);
 router.route("/Services/image/:image_id").delete(verifyJWT,serviceController.deleteImage);
-router.route("/Services/image/:Service_Id").put(verifyJWT,upload.array('file'),serviceController.addImage);
+router.route("/Services/image/:Service_Id").put(verifyJWT,upload.fields([
+  { name: 'file', maxCount: 10 },
+  { name: 'logo', maxCount: 1 }
+]),serviceController.addImage);
 module.exports = router;
