@@ -11,6 +11,7 @@ const {cloudinaryServices} = require('./cloudinary_services')
 
 class productServices {
     static async addItem(itemDetails, imageData) {
+        console.log(itemDetails)
         const { productName, Model, Price, Description, offerPercentage} = itemDetails
 
 
