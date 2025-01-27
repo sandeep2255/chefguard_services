@@ -110,7 +110,7 @@ class cg_serServices {
     
     static async updateItems(Service_Id, itemDetails, imageData) {
         const { Service_name, Logo_url, Description } = itemDetails
-        const imageValid = imageData && imageData[0];
+        const imageValid = imageData
 
         let updateData = {
             Service_name: Service_name, // Always update Service_name
