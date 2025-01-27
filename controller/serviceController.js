@@ -37,7 +37,7 @@ const addImage = asyncHandler(async(req,res,next)=>{
             return res.status(400).json({ message: 'No files uploaded' });
         }
 
-        const image = req.files
+        const image = req.files['file'] || [];
 
         const serviceDetails = await ServiceDetails.findOne({ where: { Service_Id } });
         if (!serviceDetails) {
