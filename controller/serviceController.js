@@ -144,7 +144,7 @@ const updateService = asyncHandler(async(req,res,next)=>{
     try{
         let Service_Id = req.params.Service_Id;
         const itemDetails = req.body
-        const imageData = req.files['logo'] ? req.files['logo'][0] : null;
+        const imageData = req.file;
         const services = await ServiceDetails.findByPk(Service_Id)
         if(!services){
             throw new ApiError(400, 'service Not Found');
