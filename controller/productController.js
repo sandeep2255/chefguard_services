@@ -13,9 +13,8 @@ const Sequelize = require("sequelize");
 
 const createProduct = asyncHandler(async(req,res,next)=>{
     try{
-        const {productData} = req.body
+        const productData = req.body
         
-        console.log(productData)
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: 'No files uploaded' });
         }
