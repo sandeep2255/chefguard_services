@@ -358,7 +358,11 @@ class productServices {
             const offerData = await OfferTable.update({
                 offer_price:offerPrice,
                 offer_percentage:offerPercentage
-            },{transaction:t}) // inserting offer details to offer table
+            },
+            {
+                where: { Product_Id: productId },
+                transaction: t
+            }) // inserting offer details to offer table
 
             await t.commit() //committing transaction
 
