@@ -39,7 +39,7 @@ class productServices {
         
             const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
         
-            return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '189','152');
+            return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '290.81','233.63');
         });
         
         const images = await Promise.all(uploadPromises);
@@ -256,7 +256,7 @@ class productServices {
             
                 const cloudinaryClient = await cloudinaryServices.cloudinaryConfig();
             
-                return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '189','152');
+                return cloudinaryServices.uploadFile(cloudinaryClient, fileBuffer, fileName, '290.81','233.63');
             });
             
             const images = await Promise.all(uploadPromises);
