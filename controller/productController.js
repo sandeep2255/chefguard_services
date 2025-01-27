@@ -13,7 +13,7 @@ const Sequelize = require("sequelize");
 
 const createProduct = asyncHandler(async(req,res,next)=>{
     try{
-        const productData = req.body
+        const {productData} = req.body
         
 
         if (!req.files || req.files.length === 0) {

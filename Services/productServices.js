@@ -11,7 +11,8 @@ const {cloudinaryServices} = require('./cloudinary_services')
 
 class productServices {
     static async addItem(itemDetails, imageData) {
-        const { productName, Model, Price, Description } = itemDetails
+        const { productName, Model, Price, Description, offerPercentage} = itemDetails
+
 
         // const fileDetails = imageData.map(image => ({
         //     originalName: file.originalname,
@@ -56,6 +57,21 @@ class productServices {
                 { transaction: t }
             )
             await t.commit();
+
+            let offerDetails = {productId:productId, offerPercentage:offerPercentage}
+            this.addOfferItem(offerDetails);
+
+            // const offerId = uuidv4()
+            // const newOfferDetails = await OfferTable.create(
+            //     {
+            //         Product_id:productId,
+            //         offer_id: offerId,
+            //         offer_price: offerPrice,
+            //         offer_percentage: offerPercentage,
+            //     },
+            //     { transaction: t }
+            // )
+            // await t.commit();
 
             let productImageData = []
             if (images && images.length > 0) {
@@ -157,7 +173,7 @@ class productServices {
     }
     
     static async updateItems(productId, itemDetails) {
-        const { productName, Model, Price, Description } = itemDetails;
+        const { productName, Model, Price, Description, offerPercentage } = itemDetails;
         const t = await sequelize.transaction();
     
         try {
@@ -189,6 +205,11 @@ class productServices {
                     transaction: t
                 }
             );
+
+            let offerDetails = {productId:productId, offerPercentage:offerPercentage}
+
+            this.updateOfferItem(offerDetails)
+
     
             // if (images && images.length > 0) {
             //     // await ProductImage.destroy({
@@ -304,6 +325,36 @@ class productServices {
             const offerData = await OfferTable.create({
                 Product_id:productId,
                 offer_id:offerID,
+                offer_price:offerPrice,
+                offer_percentage:offerPercentage
+            },{transaction:t}) // inserting offer details to offer table
+
+            await t.commit() //committing transaction
+
+            return offerData
+        }catch(error){
+            await t.rollback();
+            throw new ApiError('500', error.message, "could't add offer")
+        }
+    }
+
+
+    static async updateOfferItem(offerDetails){
+        const {productId, offerPercentage} = offerDetails
+        const t = await sequelize.transaction();
+
+        try{
+
+            const offerID = uuidv4(); // generating unique id for offer id
+            const currentProduct = await OfferTable.findOne({
+                where:{
+                    [Sequelize.Op.or]:[{Product_Id:productId}]
+                }
+            }) // fetching current price
+
+            const offerPrice = currentProduct.Price - ((currentProduct.Price * offerPercentage)/100) // calculating offer price
+
+            const offerData = await OfferTable.update({
                 offer_price:offerPrice,
                 offer_percentage:offerPercentage
             },{transaction:t}) // inserting offer details to offer table
