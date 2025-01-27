@@ -178,7 +178,6 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
 
             if (ProductImage.rawAttributes['ProductId']) {
                 const deletedOffers = await ProductImage.destroy({ where: { ProductId: Product_Id }, transaction: t });
-                await OfferTable.destroy({where:{ ProductId: Product_Id }, transaction: t })
                 console.log(`Deleted ${deletedOffers} images`);
             } else {
                 console.log(`Skipping offer deletion as 'Product_id' does not exist in ProductImage.`);
